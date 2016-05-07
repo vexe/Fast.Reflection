@@ -18,13 +18,6 @@ namespace Vexe.Runtime.Extensions
         public int SomeBackedProperty { get { return SomeField; } set { SomeField = value; } }
         public int SomeReadonlyProperty {  get { return SomeReadonlyField; } }
         public string SomeConstProperty { get {  return SomeConstField; } }
-
-        public TestObject()
-        {
-            var o = SomeField;
-            var oo = SomeConstField;
-            var ooo = SomeReadonlyField;
-        }
     }
 
     [TestFixture]
