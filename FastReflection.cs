@@ -410,8 +410,26 @@ namespace Vexe.Runtime.Extensions
         static void GenFieldGetter<TTarget>(FieldInfo field)
         {
             GenMemberGetter<TTarget>(field, field.FieldType, field.IsStatic,
-                (e, f) => e.lodfld((FieldInfo)f)
-            );
+                (e, f) =>
+                {
+                    if (field.IsLiteral)
+                    {
+                        if (field.FieldType == typeof(bool))
+                            e.ldc_i4_1();
+                        else if(field.FieldType == typeof(int))
+                            e.ldc_i4((int) field.GetRawConstantValue());
+                        else if (field.FieldType == typeof(float))
+                            e.ldc_r4((float) field.GetRawConstantValue());
+                        else if (field.FieldType == typeof(double))
+                            e.ldc_r8((double)field.GetRawConstantValue());
+                        else if (field.FieldType == typeof(string))
+                            e.ldstr((string) field.GetRawConstantValue());
+                        else
+                            throw new NotSupportedException(string.Format("Creating a FieldGetter for type: {0} is unsupported.", field.FieldType.Name));
+                    }
+                    else
+                        e.lodfld((FieldInfo) f);
+                });
         }
 
         static void GenPropertyGetter<TTarget>(PropertyInfo property)
@@ -548,6 +566,8 @@ namespace Vexe.Runtime.Extensions
             public ILEmitter ldc_i4_0()                            { il.Emit(OpCodes.Ldc_I4_0); return this; }
             public ILEmitter ldc_i4_1()                            { il.Emit(OpCodes.Ldc_I4_1); return this; }
             public ILEmitter ldc_i4(int c)                         { il.Emit(OpCodes.Ldc_I4, c); return this; }
+            public ILEmitter ldc_r4(float c)                       { il.Emit(OpCodes.Ldc_R4, c); return this; }
+            public ILEmitter ldc_r8(double c)                      { il.Emit(OpCodes.Ldc_R8, c); return this; }
             public ILEmitter ldarg0()                              { il.Emit(OpCodes.Ldarg_0); return this; }
             public ILEmitter ldarg1()                              { il.Emit(OpCodes.Ldarg_1); return this; }
             public ILEmitter ldarg2()                              { il.Emit(OpCodes.Ldarg_2); return this; }
@@ -555,6 +575,7 @@ namespace Vexe.Runtime.Extensions
             public ILEmitter ldarga_s(int idx)                     { il.Emit(OpCodes.Ldarga_S, idx); return this; }
             public ILEmitter ldarg(int idx)                        { il.Emit(OpCodes.Ldarg, idx); return this; }
             public ILEmitter ldarg_s(int idx)                      { il.Emit(OpCodes.Ldarg_S, idx); return this; }
+            public ILEmitter ldstr(string str)                     { il.Emit(OpCodes.Ldstr, str); return this; }
             public ILEmitter ifclass_ldind_ref(Type type)		   { if (!type.IsValueType) il.Emit(OpCodes.Ldind_Ref); return this; }
             public ILEmitter ldloc0()                              { il.Emit(OpCodes.Ldloc_0); return this; }
             public ILEmitter ldloc1()                              { il.Emit(OpCodes.Ldloc_1); return this; }
